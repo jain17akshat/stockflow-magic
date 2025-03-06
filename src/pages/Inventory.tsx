@@ -16,7 +16,7 @@ import {
   InventoryItem,
   formatCurrency 
 } from '@/utils/inventoryUtils';
-import { PlusCircle, FileDown, FileUp, Search, Package, Filter } from 'lucide-react';
+import { PlusCircle, FileDown, FileUp, Search, Package, Filter, Trash2 } from 'lucide-react';
 import { 
   Select, 
   SelectContent, 
@@ -26,6 +26,17 @@ import {
 } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Inventory: React.FC = () => {
   const navigate = useNavigate();
@@ -33,6 +44,7 @@ const Inventory: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
   const [items, setItems] = useState<InventoryItem[]>(sampleInventoryItems);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   // Get unique categories for filter
   const categories = Array.from(new Set(items.map(item => item.category)));
@@ -74,6 +86,25 @@ const Inventory: React.FC = () => {
       title: "Import Feature",
       description: "The import feature will be implemented soon",
     });
+  };
+
+  const confirmDelete = (id: string) => {
+    setItemToDelete(id);
+  };
+
+  const handleDeleteItem = () => {
+    if (!itemToDelete) return;
+    
+    setItems(currentItems => 
+      currentItems.filter(item => item.id !== itemToDelete)
+    );
+    
+    toast({
+      title: "Item Deleted",
+      description: "The inventory item has been removed successfully",
+    });
+    
+    setItemToDelete(null);
   };
 
   return (
@@ -147,12 +178,13 @@ const Inventory: React.FC = () => {
                   <TableHead className="text-right">Selling Price</TableHead>
                   <TableHead className="text-right">Value</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredItems.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-4">
+                    <TableCell colSpan={9} className="text-center py-4">
                       No items found. Try adjusting your search or filters.
                     </TableCell>
                   </TableRow>
@@ -176,6 +208,38 @@ const Inventory: React.FC = () => {
                         >
                           {item.currentStock <= item.lowStockThreshold ? 'Low Stock' : 'In Stock'}
                         </span>
+                      </TableCell>
+                      <TableCell>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => confirmDelete(item.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete "{item.name}" from your inventory. 
+                                This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                className="bg-red-500 hover:bg-red-600"
+                                onClick={handleDeleteItem}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))
