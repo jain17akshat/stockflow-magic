@@ -24,8 +24,12 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const Inventory: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
   const [items, setItems] = useState<InventoryItem[]>(sampleInventoryItems);
@@ -45,6 +49,33 @@ const Inventory: React.FC = () => {
     return matchesSearch && matchesCategory;
   });
 
+  const handleAddItem = () => {
+    navigate('/add-item');
+  };
+
+  const handleExport = () => {
+    toast({
+      title: "Export Started",
+      description: "Your inventory data is being exported to Excel",
+    });
+    
+    // In a real app, this would trigger an API call to generate and download the Excel file
+    setTimeout(() => {
+      toast({
+        title: "Export Complete",
+        description: "Your inventory data has been exported successfully",
+      });
+    }, 1500);
+  };
+
+  const handleImport = () => {
+    // In a real app, this would open a file dialog and process the imported file
+    toast({
+      title: "Import Feature",
+      description: "The import feature will be implemented soon",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -53,13 +84,13 @@ const Inventory: React.FC = () => {
           <p className="text-gray-500">Manage your stock and inventory items</p>
         </div>
         <div className="flex gap-2">
-          <Button className="gap-1">
+          <Button className="gap-1" onClick={handleAddItem}>
             <PlusCircle className="h-4 w-4" /> Add Item
           </Button>
-          <Button variant="outline" className="gap-1">
+          <Button variant="outline" className="gap-1" onClick={handleExport}>
             <FileDown className="h-4 w-4" /> Export
           </Button>
-          <Button variant="outline" className="gap-1">
+          <Button variant="outline" className="gap-1" onClick={handleImport}>
             <FileUp className="h-4 w-4" /> Import
           </Button>
         </div>

@@ -8,6 +8,7 @@ import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Inventory from "./pages/Inventory";
 import AddStock from "./pages/AddStock";
+import AddItem from "./pages/AddItem";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/" element={<Layout><Dashboard /></Layout>} />
           <Route path="/inventory" element={<Layout><Inventory /></Layout>} />
           <Route path="/add-stock" element={<Layout><AddStock /></Layout>} />
+          <Route path="/add-item" element={<Layout><AddItem /></Layout>} />
           {/* These routes will be implemented later */}
           <Route path="/sales" element={<Layout><Dashboard /></Layout>} />
           <Route path="/reports" element={<Layout><Dashboard /></Layout>} />
