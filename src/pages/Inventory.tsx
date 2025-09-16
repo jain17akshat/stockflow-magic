@@ -12,10 +12,10 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { 
-  sampleInventoryItems, 
   InventoryItem,
   formatCurrency 
 } from '@/utils/inventoryUtils';
+import { useInventory } from '@/contexts/InventoryContext';
 import { PlusCircle, FileDown, FileUp, Search, Package, Filter, Trash2 } from 'lucide-react';
 import { 
   Select, 
@@ -41,9 +41,9 @@ import {
 const Inventory: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { items, removeItem } = useInventory();
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
-  const [items, setItems] = useState<InventoryItem[]>(sampleInventoryItems);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   // Get unique categories for filter
@@ -95,9 +95,7 @@ const Inventory: React.FC = () => {
   const handleDeleteItem = () => {
     if (!itemToDelete) return;
     
-    setItems(currentItems => 
-      currentItems.filter(item => item.id !== itemToDelete)
-    );
+    removeItem(itemToDelete);
     
     toast({
       title: "Item Deleted",

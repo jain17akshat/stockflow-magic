@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useInventory } from '@/contexts/InventoryContext';
 
 const generateSKU = (name: string, category: string) => {
   const prefix = category.substring(0, 3).toUpperCase();
@@ -18,6 +19,7 @@ const generateSKU = (name: string, category: string) => {
 const AddItem: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addItem } = useInventory();
   const [formData, setFormData] = useState({
     name: '',
     category: '',
@@ -61,8 +63,17 @@ const AddItem: React.FC = () => {
       return;
     }
 
-    // In a real application, you would save this data to your backend
-    console.log('Adding new item:', formData);
+    // Add the item to inventory
+    addItem({
+      name: formData.name,
+      sku: formData.sku || generateSKU(formData.name, formData.category),
+      category: formData.category,
+      currentStock: parseInt(formData.currentStock),
+      lowStockThreshold: parseInt(formData.lowStockThreshold),
+      purchasePrice: parseFloat(formData.purchasePrice),
+      sellingPrice: parseFloat(formData.sellingPrice),
+      supplier: formData.supplier,
+    });
     
     // Show success message
     toast({

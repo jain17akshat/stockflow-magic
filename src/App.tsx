@@ -12,29 +12,32 @@ import AddItem from "./pages/AddItem";
 import Reports from "./pages/Reports";
 import Sales from "./pages/Sales";
 import NotFound from "./pages/NotFound";
+import { InventoryProvider } from "./contexts/InventoryContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/inventory" element={<Layout><Inventory /></Layout>} />
-          <Route path="/add-stock" element={<Layout><AddStock /></Layout>} />
-          <Route path="/add-item" element={<Layout><AddItem /></Layout>} />
-          <Route path="/reports" element={<Layout><Reports /></Layout>} />
-          <Route path="/sales" element={<Layout><Sales /></Layout>} />
-          {/* These routes will be implemented later */}
-          <Route path="/alerts" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/settings" element={<Layout><Dashboard /></Layout>} />
-          {/* Catch-all route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <InventoryProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout><Dashboard /></Layout>} />
+            <Route path="/inventory" element={<Layout><Inventory /></Layout>} />
+            <Route path="/add-stock" element={<Layout><AddStock /></Layout>} />
+            <Route path="/add-item" element={<Layout><AddItem /></Layout>} />
+            <Route path="/reports" element={<Layout><Reports /></Layout>} />
+            <Route path="/sales" element={<Layout><Sales /></Layout>} />
+            {/* These routes will be implemented later */}
+            <Route path="/alerts" element={<Layout><Dashboard /></Layout>} />
+            <Route path="/settings" element={<Layout><Dashboard /></Layout>} />
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </InventoryProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
