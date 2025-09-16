@@ -6,10 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { sampleInventoryItems } from '@/utils/inventoryUtils';
+import { useInventory } from '@/contexts/InventoryContext';
+import { useNavigate } from 'react-router-dom';
 
 const AddStock: React.FC = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { items, updateStock } = useInventory();
   const [formData, setFormData] = useState({
     itemId: '',
     quantity: '',
@@ -40,13 +43,29 @@ const AddStock: React.FC = () => {
       return;
     }
 
-    // In a real application, you would save this data to your backend
-    console.log('Adding stock:', formData);
+    // Find the selected item to get its name
+    const selectedItem = items.find(item => item.id === formData.itemId);
+    if (!selectedItem) {
+      toast({
+        title: "Error",
+        description: "Selected item not found",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Update the stock using the inventory context
+    updateStock(
+      formData.itemId, 
+      parseInt(formData.quantity), 
+      'add', 
+      parseFloat(formData.unitPrice)
+    );
     
     // Show success message
     toast({
       title: "Stock Added",
-      description: `Successfully added ${formData.quantity} units to inventory.`,
+      description: `Successfully added ${formData.quantity} units of ${selectedItem.name} to inventory.`,
     });
     
     // Reset form
@@ -91,7 +110,7 @@ const AddStock: React.FC = () => {
                     <SelectValue placeholder="Select an item" />
                   </SelectTrigger>
                   <SelectContent>
-                    {sampleInventoryItems.map((item) => (
+                    {items.map((item) => (
                       <SelectItem key={item.id} value={item.id}>
                         {item.name} - SKU: {item.sku}
                       </SelectItem>
@@ -154,7 +173,7 @@ const AddStock: React.FC = () => {
             </div>
             
             <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" type="button">Cancel</Button>
+              <Button variant="outline" type="button" onClick={() => navigate('/inventory')}>Cancel</Button>
               <Button type="submit">Add Stock</Button>
             </div>
           </form>
