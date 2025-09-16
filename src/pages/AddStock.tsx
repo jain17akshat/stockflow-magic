@@ -33,6 +33,16 @@ const AddStock: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Check if there are any items available
+    if (items.length === 0) {
+      toast({
+        title: "No Items Available",
+        description: "Please add items to inventory first before adding stock",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Basic validation
     if (!formData.itemId || !formData.quantity || !formData.unitPrice || !formData.supplier) {
       toast({
@@ -100,24 +110,31 @@ const AddStock: React.FC = () => {
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="itemId">Select Item</Label>
-                <Select
-                  value={formData.itemId}
-                  onValueChange={(value) => handleSelectChange('itemId', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an item" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {items.map((item) => (
-                      <SelectItem key={item.id} value={item.id}>
-                        {item.name} - SKU: {item.sku}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="itemId">Select Item</Label>
+                  <Select
+                    value={formData.itemId}
+                    onValueChange={(value) => handleSelectChange('itemId', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={items.length === 0 ? "No items available" : "Select an item"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {items.length === 0 ? (
+                        <div className="p-4 text-center text-gray-500">
+                          <p>No items available</p>
+                          <p className="text-sm">Add items to inventory first</p>
+                        </div>
+                      ) : (
+                        items.map((item) => (
+                          <SelectItem key={item.id} value={item.id}>
+                            {item.name} - SKU: {item.sku}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
               
               <div className="space-y-2">
                 <Label htmlFor="quantity">Quantity</Label>
