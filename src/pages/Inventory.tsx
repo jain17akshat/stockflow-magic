@@ -182,8 +182,15 @@ const Inventory: React.FC = () => {
               <TableBody>
                 {filteredItems.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-4">
-                      No items found. Try adjusting your search or filters.
+                    <TableCell colSpan={9} className="text-center py-8">
+                      <div className="flex flex-col items-center gap-2">
+                        <Package className="h-12 w-12 text-gray-400" />
+                        <h3 className="text-lg font-medium text-gray-600">No items in inventory</h3>
+                        <p className="text-gray-500">Add your first item to get started</p>
+                        <Button className="mt-2" onClick={handleAddItem}>
+                          <PlusCircle className="h-4 w-4 mr-2" /> Add Item
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (

@@ -22,8 +22,8 @@ export const useInventory = () => {
 };
 
 export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<InventoryItem[]>(sampleInventoryItems);
-  const [transactions, setTransactions] = useState<StockTransaction[]>(sampleTransactions);
+  const [items, setItems] = useState<InventoryItem[]>([]);
+  const [transactions, setTransactions] = useState<StockTransaction[]>([]);
 
   const addItem = (itemData: Omit<InventoryItem, 'id' | 'lastUpdated'>) => {
     const newItem: InventoryItem = {
