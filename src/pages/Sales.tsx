@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,31 +28,83 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import { 
-  formatCurrency,
-  StockTransaction
-} from '@/utils/inventoryUtils';
-import { useInventory } from '@/contexts/InventoryContext';
 import { Download, ShoppingCart, DollarSign, TrendingUp, Calendar, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+// Format INR currency
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
+
 const Sales: React.FC = () => {
   const { toast } = useToast();
-  const { items, transactions } = useInventory();
   const currentDate = new Date();
   const [timeRange, setTimeRange] = useState('month');
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth().toString());
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear().toString());
-  
-  // Filter sales transactions (only sell type)
+
+  // ✅ Placeholder inventory items
+  const items = [
+    { id: '1', name: 'Notebook', category: 'Stationery' },
+    { id: '2', name: 'Ball Pen', category: 'Stationery' },
+    { id: '3', name: 'Coffee Mug', category: 'Kitchen' },
+    { id: '4', name: 'T-shirt', category: 'Clothing' }
+  ];
+
+  // ✅ Placeholder sales transactions
+  const transactions = [
+    {
+      id: 't1',
+      type: 'sell',
+      date: new Date('2025-09-01'),
+      itemId: '1',
+      itemName: 'Notebook',
+      quantity: 10,
+      unitPrice: 50,
+      totalPrice: 500,
+      customer: 'Ravi'
+    },
+    {
+      id: 't2',
+      type: 'sell',
+      date: new Date('2025-09-05'),
+      itemId: '2',
+      itemName: 'Ball Pen',
+      quantity: 20,
+      unitPrice: 10,
+      totalPrice: 200,
+      customer: 'Sneha'
+    },
+    {
+      id: 't3',
+      type: 'sell',
+      date: new Date('2025-09-08'),
+      itemId: '3',
+      itemName: 'Coffee Mug',
+      quantity: 5,
+      unitPrice: 150,
+      totalPrice: 750,
+      customer: 'Walk-in Customer'
+    },
+    {
+      id: 't4',
+      type: 'sell',
+      date: new Date('2025-09-10'),
+      itemId: '4',
+      itemName: 'T-shirt',
+      quantity: 3,
+      unitPrice: 400,
+      totalPrice: 1200,
+      customer: 'Amit'
+    }
+  ];
+
   const salesTransactions = transactions.filter(t => t.type === 'sell');
-  
-  // Filter by selected time period
+
   const filteredSales = salesTransactions.filter(transaction => {
     const transactionDate = new Date(transaction.date);
     if (timeRange === 'all') return true;
     if (timeRange === 'month') {
-      return transactionDate.getMonth() === parseInt(selectedMonth) && 
+      return transactionDate.getMonth() === parseInt(selectedMonth) &&
              transactionDate.getFullYear() === parseInt(selectedYear);
     }
     if (timeRange === 'year') {
@@ -61,94 +112,64 @@ const Sales: React.FC = () => {
     }
     return true;
   });
-  
-  // Calculate total sales revenue
+
   const totalRevenue = filteredSales.reduce((total, sale) => total + sale.totalPrice, 0);
-  
-  // Calculate total units sold
   const totalUnitsSold = filteredSales.reduce((total, sale) => total + sale.quantity, 0);
-  
-  // Calculate average sales value
   const averageSaleValue = filteredSales.length > 0 ? totalRevenue / filteredSales.length : 0;
-  
-  // Sales by category
+
   const salesByCategory: Record<string, number> = {};
   filteredSales.forEach(sale => {
     const item = items.find(i => i.id === sale.itemId);
     if (item) {
-      if (!salesByCategory[item.category]) {
-        salesByCategory[item.category] = 0;
-      }
+      if (!salesByCategory[item.category]) salesByCategory[item.category] = 0;
       salesByCategory[item.category] += sale.totalPrice;
     }
   });
-  
-  // Prepare chart data
+
   const categoryChartData = Object.entries(salesByCategory).map(([category, value]) => ({
-    category,
-    revenue: value
+    category, revenue: value
   }));
-  
-  // Prepare date-based sales data
+
   const salesByDate: Record<string, number> = {};
   filteredSales.forEach(sale => {
     const date = new Date(sale.date);
-    const dateString = date.toLocaleDateString('en-US', { 
-      day: '2-digit', 
-      month: 'short'
-    });
-    if (!salesByDate[dateString]) {
-      salesByDate[dateString] = 0;
-    }
+    const dateString = date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+    if (!salesByDate[dateString]) salesByDate[dateString] = 0;
     salesByDate[dateString] += sale.totalPrice;
   });
-  
+
   const dateChartData = Object.entries(salesByDate)
     .map(([date, revenue]) => ({ date, revenue }))
-    .sort((a, b) => {
-      // Sort by date
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      return dateA.getTime() - dateB.getTime();
-    });
-  
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
   const handleExportSales = () => {
-    toast({
-      title: "Export Started",
-      description: "Your sales data is being exported",
-    });
-    
+    toast({ title: "Export Started", description: "Your sales data is being exported" });
     setTimeout(() => {
-      toast({
-        title: "Export Complete",
-        description: "Your sales data has been exported successfully",
-      });
+      toast({ title: "Export Complete", description: "Your sales data has been exported successfully" });
     }, 1500);
   };
 
   const MONTHS = [
-    'January', 'February', 'March', 'April', 'May', 'June', 
+    'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
   return (
     <div className="space-y-6">
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Sales</h1>
           <p className="text-gray-500">View and analyze your sales data</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            className="gap-1"
-            onClick={handleExportSales}
-          >
+          <Button className="gap-1" onClick={handleExportSales}>
             <Download className="h-4 w-4" /> Export Sales
           </Button>
         </div>
       </div>
 
-      {/* Filter Controls */}
+      {/* Filters */}
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -156,52 +177,42 @@ const Sales: React.FC = () => {
               <Filter className="h-5 w-5" /> Sales Filters
             </CardTitle>
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex items-center gap-2">
-                <Select value={timeRange} onValueChange={setTimeRange}>
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Time Range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="month">This Month</SelectItem>
-                    <SelectItem value="year">This Year</SelectItem>
-                    <SelectItem value="all">All Time</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
+              <Select value={timeRange} onValueChange={setTimeRange}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Time Range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="month">This Month</SelectItem>
+                  <SelectItem value="year">This Year</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
+
               {timeRange !== 'all' && (
                 <>
                   {timeRange === 'month' && (
-                    <div className="flex items-center gap-2">
-                      <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                          <SelectValue placeholder="Select Month" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {MONTHS.map((month, index) => (
-                            <SelectItem key={index} value={index.toString()}>
-                              {month}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center gap-2">
-                    <Select value={selectedYear} onValueChange={setSelectedYear}>
+                    <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                       <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Select Year" />
+                        <SelectValue placeholder="Select Month" />
                       </SelectTrigger>
                       <SelectContent>
-                        {[2023, 2024, 2025].map((year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
+                        {MONTHS.map((month, index) => (
+                          <SelectItem key={index} value={index.toString()}>{month}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
+                  )}
+
+                  <Select value={selectedYear} onValueChange={setSelectedYear}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                      <SelectValue placeholder="Select Year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[2023, 2024, 2025].map(year => (
+                        <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </>
               )}
             </div>
@@ -209,60 +220,28 @@ const Sales: React.FC = () => {
         </CardHeader>
       </Card>
 
-      {/* Sales Summary Cards */}
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Total Revenue</p>
-                <h3 className="text-2xl font-bold mt-1">{formatCurrency(totalRevenue)}</h3>
-              </div>
-              <div className="p-2 rounded-full bg-green-100">
-                <DollarSign className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Units Sold</p>
-                <h3 className="text-2xl font-bold mt-1">{totalUnitsSold}</h3>
-              </div>
-              <div className="p-2 rounded-full bg-blue-100">
-                <ShoppingCart className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Avg Sale Value</p>
-                <h3 className="text-2xl font-bold mt-1">{formatCurrency(averageSaleValue)}</h3>
-              </div>
-              <div className="p-2 rounded-full bg-amber-100">
-                <TrendingUp className="h-6 w-6 text-amber-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <Card><CardContent className="p-6">
+          <p className="text-sm text-gray-500">Total Revenue</p>
+          <h3 className="text-2xl font-bold">{formatCurrency(totalRevenue)}</h3>
+        </CardContent></Card>
+
+        <Card><CardContent className="p-6">
+          <p className="text-sm text-gray-500">Units Sold</p>
+          <h3 className="text-2xl font-bold">{totalUnitsSold}</h3>
+        </CardContent></Card>
+
+        <Card><CardContent className="p-6">
+          <p className="text-sm text-gray-500">Avg Sale Value</p>
+          <h3 className="text-2xl font-bold">{formatCurrency(averageSaleValue)}</h3>
+        </CardContent></Card>
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales Trend Chart */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" /> Sales Trend
-            </CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Sales Trend</CardTitle></CardHeader>
           <CardContent>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -270,7 +249,7 @@ const Sales: React.FC = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
+                  <Tooltip formatter={(v) => [formatCurrency(v as number), 'Revenue']} />
                   <Legend />
                   <Line type="monotone" dataKey="revenue" stroke="#8884d8" activeDot={{ r: 8 }} />
                 </LineChart>
@@ -279,13 +258,8 @@ const Sales: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Sales by Category Chart */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5" /> Sales by Category
-            </CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Sales by Category</CardTitle></CardHeader>
           <CardContent>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -293,7 +267,7 @@ const Sales: React.FC = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="category" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [formatCurrency(value as number), 'Revenue']} />
+                  <Tooltip formatter={(v) => [formatCurrency(v as number), 'Revenue']} />
                   <Legend />
                   <Bar dataKey="revenue" fill="#8884d8" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -305,11 +279,7 @@ const Sales: React.FC = () => {
 
       {/* Recent Sales Table */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" /> Recent Sales
-          </CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Recent Sales</CardTitle></CardHeader>
         <CardContent>
           <div className="rounded-md border">
             <Table>
@@ -318,7 +288,7 @@ const Sales: React.FC = () => {
                   <TableHead>Date</TableHead>
                   <TableHead>Item</TableHead>
                   <TableHead>Customer</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
+                  <TableHead className="text-right">Qty</TableHead>
                   <TableHead className="text-right">Unit Price</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                 </TableRow>
@@ -330,25 +300,24 @@ const Sales: React.FC = () => {
                       No sales found for this period.
                     </TableCell>
                   </TableRow>
-                ) : (
-                  filteredSales.map((sale) => (
-                    <TableRow key={sale.id}>
-                      <TableCell>{sale.date.toLocaleDateString()}</TableCell>
-                      <TableCell>{sale.itemName}</TableCell>
-                      <TableCell>{sale.customer || 'Walk-in Customer'}</TableCell>
-                      <TableCell className="text-right">{sale.quantity}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(sale.unitPrice)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(sale.totalPrice)}</TableCell>
-                    </TableRow>
-                  ))
-                )}
+                ) : filteredSales.map(sale => (
+                  <TableRow key={sale.id}>
+                    <TableCell>{sale.date.toLocaleDateString()}</TableCell>
+                    <TableCell>{sale.itemName}</TableCell>
+                    <TableCell>{sale.customer}</TableCell>
+                    <TableCell className="text-right">{sale.quantity}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(sale.unitPrice)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(sale.totalPrice)}</TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
         </CardContent>
       </Card>
+
     </div>
   );
 };
 
-export default Sales; so add some placeholder data just add placeholder data rest all things same
+export default Sales;
