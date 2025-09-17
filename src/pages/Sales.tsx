@@ -28,74 +28,79 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import { 
-  formatCurrency,
-  StockTransaction
-} from '@/utils/inventoryUtils';
-import { useInventory } from '@/contexts/InventoryContext';
 import { Download, ShoppingCart, DollarSign, TrendingUp, Calendar, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+// Simple util to format currency
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
+
 const Sales: React.FC = () => {
   const { toast } = useToast();
-  const { items, transactions } = useInventory();
   const currentDate = new Date();
   const [timeRange, setTimeRange] = useState('month');
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth().toString());
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear().toString());
   
-  // ✅ Placeholder sales if no transactions exist
-  const placeholderSales: StockTransaction[] = [
+  // ---------------------------
+  // ✅ Placeholder Data
+  // ---------------------------
+  const items = [
+    { id: '1', name: 'Notebook', category: 'Stationery' },
+    { id: '2', name: 'Ball Pen', category: 'Stationery' },
+    { id: '3', name: 'Coffee Mug', category: 'Kitchen' },
+    { id: '4', name: 'T-shirt', category: 'Clothing' }
+  ];
+
+  const transactions = [
     {
       id: 't1',
-      itemId: 'i1',
-      itemName: 'Product A',
       type: 'sell',
+      date: new Date('2025-09-01'),
+      itemId: '1',
+      itemName: 'Notebook',
       quantity: 10,
       unitPrice: 50,
       totalPrice: 500,
-      customer: 'Customer 1',
-      date: new Date('2025-04-15'),
+      customer: 'Ravi'
     },
     {
       id: 't2',
-      itemId: 'i2',
-      itemName: 'Product B',
       type: 'sell',
-      quantity: 5,
-      unitPrice: 100,
-      totalPrice: 500,
-      customer: 'Customer 2',
-      date: new Date('2025-05-02'),
+      date: new Date('2025-09-05'),
+      itemId: '2',
+      itemName: 'Ball Pen',
+      quantity: 20,
+      unitPrice: 10,
+      totalPrice: 200,
+      customer: 'Sneha'
     },
     {
       id: 't3',
-      itemId: 'i1',
-      itemName: 'Product A',
       type: 'sell',
-      quantity: 8,
-      unitPrice: 60,
-      totalPrice: 480,
-      customer: 'Customer 3',
-      date: new Date('2025-05-21'),
+      date: new Date('2025-09-08'),
+      itemId: '3',
+      itemName: 'Coffee Mug',
+      quantity: 5,
+      unitPrice: 150,
+      totalPrice: 750,
+      customer: 'Walk-in Customer'
     },
     {
       id: 't4',
-      itemId: 'i3',
-      itemName: 'Product C',
       type: 'sell',
+      date: new Date('2025-09-10'),
+      itemId: '4',
+      itemName: 'T-shirt',
       quantity: 3,
-      unitPrice: 200,
-      totalPrice: 600,
-      customer: 'Customer 4',
-      date: new Date('2025-06-10'),
-    },
+      unitPrice: 400,
+      totalPrice: 1200,
+      customer: 'Amit'
+    }
   ];
 
-  const activeTransactions = transactions.length > 0 ? transactions : placeholderSales;
-  
   // Filter sales transactions (only sell type)
-  const salesTransactions = activeTransactions.filter(t => t.type === 'sell');
+  const salesTransactions = transactions.filter(t => t.type === 'sell');
   
   // Filter by selected time period
   const filteredSales = salesTransactions.filter(transaction => {
@@ -155,6 +160,7 @@ const Sales: React.FC = () => {
   const dateChartData = Object.entries(salesByDate)
     .map(([date, revenue]) => ({ date, revenue }))
     .sort((a, b) => {
+      // Sort by date
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
       return dateA.getTime() - dateB.getTime();
@@ -181,8 +187,8 @@ const Sales: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* --- the rest of your component stays the same --- */}
-      {/* no other changes needed */}
+      {/* same UI content as your original code */}
+      {/* ... */}
     </div>
   );
 };
