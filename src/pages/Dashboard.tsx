@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Package, 
@@ -35,17 +34,21 @@ const Dashboard: React.FC = () => {
   const profit = calculateProfit(monthlyRevenue, monthlyExpenditure);
   const lowStockItems = getLowStockItems(items);
   
-  // Data for monthly sales chart
-  const monthlySalesData = [
-    { name: 'Apr', sales: 320000 },
-    { name: 'May', sales: 375000 },
-    { name: 'Jun', sales: 420000 },
-    { name: 'Jul', sales: 392000 },
-    { name: 'Aug', sales: 450000 },
-    { name: 'Sep', sales: 560000 },
-  ];
+  // ✅ Generate real-time monthly sales from transactions
+  const monthlySalesMap = transactions.reduce((acc, tx) => {
+    if (tx.type === 'sell') {
+      const month = tx.date.toLocaleString('default', { month: 'short' });
+      acc[month] = (acc[month] || 0) + tx.totalPrice;
+    }
+    return acc;
+  }, {} as Record<string, number>);
 
-  // Data for inventory by category (from real data)
+  const monthOrder = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthlySalesData = monthOrder
+    .filter(m => monthlySalesMap[m])
+    .map(m => ({ name: m, sales: monthlySalesMap[m] }));
+
+  // Inventory by category from items
   const categoryData = items.reduce((acc, item) => {
     const existing = acc.find(cat => cat.name === item.category);
     if (existing) {
@@ -58,7 +61,7 @@ const Dashboard: React.FC = () => {
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-  // Recent transactions for display
+  // Recent transactions
   const recentTransactions = transactions
     .sort((a, b) => b.date.getTime() - a.date.getTime())
     .slice(0, 5);
