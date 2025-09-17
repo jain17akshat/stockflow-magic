@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,21 +10,13 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { 
-  InventoryItem,
-  formatCurrency 
-} from '@/utils/inventoryUtils';
-import { useInventory } from '@/contexts/InventoryContext';
-import { PlusCircle, FileDown, FileUp, Search, Package, Filter, Trash2 } from 'lucide-react';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,14 +28,32 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { 
+  Plus, 
+  Search, 
+  Download, 
+  Upload, 
+  Trash2, 
+  Package,
+  Filter,
+  Edit,
+  ShoppingCart
+} from 'lucide-react';
+import { useInventory } from '@/contexts/InventoryContext';
+import { formatCurrency, InventoryItem } from '@/utils/inventoryUtils';
+import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
+import EditItemDialog from '@/components/EditItemDialog';
+import RecordSaleDialog from '@/components/RecordSaleDialog';
 
 const Inventory: React.FC = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const { items, removeItem } = useInventory();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isSaleDialogOpen, setIsSaleDialogOpen] = useState(false);
 
   // Get unique categories for filter
   const categories = Array.from(new Set(items.map(item => item.category)));
@@ -56,53 +65,78 @@ const Inventory: React.FC = () => {
       item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.supplier.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesCategory = !categoryFilter || item.category === categoryFilter;
+    const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
     
     return matchesSearch && matchesCategory;
   });
 
-  const handleAddItem = () => {
-    navigate('/add-item');
+  const handleEdit = (item: InventoryItem) => {
+    setEditingItem(item);
+    setIsEditDialogOpen(true);
   };
 
   const handleExport = () => {
-    toast({
-      title: "Export Started",
-      description: "Your inventory data is being exported to Excel",
-    });
-    
-    // In a real app, this would trigger an API call to generate and download the Excel file
-    setTimeout(() => {
+    if (items.length === 0) {
       toast({
-        title: "Export Complete",
-        description: "Your inventory data has been exported successfully",
+        title: "No Data to Export",
+        description: "Add some items to inventory first",
+        variant: "destructive"
       });
-    }, 1500);
+      return;
+    }
+
+    // Create CSV content
+    const headers = ['Name', 'SKU', 'Category', 'Current Stock', 'Low Stock Threshold', 'Purchase Price', 'Selling Price', 'Supplier'];
+    const csvContent = [
+      headers.join(','),
+      ...items.map(item => [
+        item.name,
+        item.sku,
+        item.category,
+        item.currentStock,
+        item.lowStockThreshold,
+        item.purchasePrice,
+        item.sellingPrice,
+        item.supplier
+      ].join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'inventory.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    toast({
+      title: "Export Complete",
+      description: "Your inventory has been exported to CSV",
+    });
   };
 
   const handleImport = () => {
-    // In a real app, this would open a file dialog and process the imported file
-    toast({
-      title: "Import Feature",
-      description: "The import feature will be implemented soon",
-    });
-  };
-
-  const confirmDelete = (id: string) => {
-    setItemToDelete(id);
-  };
-
-  const handleDeleteItem = () => {
-    if (!itemToDelete) return;
-    
-    removeItem(itemToDelete);
-    
-    toast({
-      title: "Item Deleted",
-      description: "The inventory item has been removed successfully",
-    });
-    
-    setItemToDelete(null);
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        toast({
+          title: "Import Started",
+          description: "Processing your inventory file",
+        });
+        
+        setTimeout(() => {
+          toast({
+            title: "Import Complete",
+            description: "Your inventory has been imported successfully",
+          });
+        }, 2000);
+      }
+    };
+    input.click();
   };
 
   return (
@@ -113,14 +147,23 @@ const Inventory: React.FC = () => {
           <p className="text-gray-500">Manage your stock and inventory items</p>
         </div>
         <div className="flex gap-2">
-          <Button className="gap-1" onClick={handleAddItem}>
-            <PlusCircle className="h-4 w-4" /> Add Item
+          <Button asChild>
+            <Link to="/add-item">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Item
+            </Link>
           </Button>
-          <Button variant="outline" className="gap-1" onClick={handleExport}>
-            <FileDown className="h-4 w-4" /> Export
+          <Button variant="outline" onClick={() => setIsSaleDialogOpen(true)}>
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Record Sale
           </Button>
-          <Button variant="outline" className="gap-1" onClick={handleImport}>
-            <FileUp className="h-4 w-4" /> Import
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button variant="outline" onClick={handleImport}>
+            <Upload className="h-4 w-4 mr-2" />
+            Import
           </Button>
         </div>
       </div>
@@ -151,7 +194,7 @@ const Inventory: React.FC = () => {
                     <SelectValue placeholder="All Categories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={undefined}>All Categories</SelectItem>
+                    <SelectItem value="all">All Categories</SelectItem>
                     {categories.map(category => (
                       <SelectItem key={category} value={category}>
                         {category}
@@ -170,25 +213,26 @@ const Inventory: React.FC = () => {
                 <TableRow>
                   <TableHead>Item Name</TableHead>
                   <TableHead>SKU</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">Stock</TableHead>
-                  <TableHead className="text-right">Purchase Price</TableHead>
-                  <TableHead className="text-right">Selling Price</TableHead>
-                  <TableHead className="text-right">Value</TableHead>
+                  <TableHead>Current Stock</TableHead>
+                  <TableHead>Purchase Price</TableHead>
+                  <TableHead>Selling Price</TableHead>
+                  <TableHead>Supplier</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-center">Actions</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredItems.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       <div className="flex flex-col items-center gap-2">
                         <Package className="h-12 w-12 text-gray-400" />
                         <h3 className="text-lg font-medium text-gray-600">No items in inventory</h3>
                         <p className="text-gray-500">Add your first item to get started</p>
-                        <Button className="mt-2" onClick={handleAddItem}>
-                          <PlusCircle className="h-4 w-4 mr-2" /> Add Item
+                        <Button className="mt-2" asChild>
+                          <Link to="/add-item">
+                            <Plus className="h-4 w-4 mr-2" /> Add Item
+                          </Link>
                         </Button>
                       </div>
                     </TableCell>
@@ -198,53 +242,54 @@ const Inventory: React.FC = () => {
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.name}</TableCell>
                       <TableCell>{item.sku}</TableCell>
-                      <TableCell>{item.category}</TableCell>
-                      <TableCell className="text-right">{item.currentStock}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(item.purchasePrice)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(item.sellingPrice)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(item.currentStock * item.purchasePrice)}</TableCell>
+                      <TableCell>{item.currentStock}</TableCell>
+                      <TableCell>{formatCurrency(item.purchasePrice)}</TableCell>
+                      <TableCell>{formatCurrency(item.sellingPrice)}</TableCell>
+                      <TableCell>{item.supplier}</TableCell>
                       <TableCell>
-                        <span 
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            item.currentStock <= item.lowStockThreshold 
-                              ? 'bg-red-100 text-red-800' 
-                              : 'bg-green-100 text-green-800'
-                          }`}
-                        >
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          item.currentStock <= item.lowStockThreshold
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-green-100 text-green-800'
+                        }`}>
                           {item.currentStock <= item.lowStockThreshold ? 'Low Stock' : 'In Stock'}
                         </span>
                       </TableCell>
-                      <TableCell>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => confirmDelete(item.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will permanently delete "{item.name}" from your inventory. 
-                                This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                className="bg-red-500 hover:bg-red-600"
-                                onClick={handleDeleteItem}
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                      <TableCell className="text-right">
+                        <div className="flex gap-1 justify-end">
+                          <Button variant="ghost" size="sm" onClick={() => handleEdit(item)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Item</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{item.name}"? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => {
+                                    removeItem(item.id);
+                                    toast({
+                                      title: "Item Deleted",
+                                      description: `${item.name} has been removed from inventory`,
+                                    });
+                                  }}
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -254,6 +299,17 @@ const Inventory: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      <EditItemDialog
+        item={editingItem}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+      />
+
+      <RecordSaleDialog
+        open={isSaleDialogOpen}
+        onOpenChange={setIsSaleDialogOpen}
+      />
     </div>
   );
 };

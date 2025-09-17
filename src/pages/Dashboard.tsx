@@ -16,8 +16,6 @@ import {
   PieChart, Pie, Cell, Legend 
 } from 'recharts';
 import { 
-  sampleInventoryItems, 
-  sampleTransactions, 
   formatCurrency, 
   calculateInventoryValue,
   calculateTotalRevenue,
@@ -25,14 +23,17 @@ import {
   calculateProfit,
   getLowStockItems
 } from '@/utils/inventoryUtils';
+import { useInventory } from '@/contexts/InventoryContext';
 
 const Dashboard: React.FC = () => {
+  const { items, transactions } = useInventory();
+  
   // Calculate key metrics
-  const inventoryValue = calculateInventoryValue(sampleInventoryItems);
-  const monthlyRevenue = calculateTotalRevenue(sampleTransactions);
-  const monthlyExpenditure = calculateTotalExpenditure(sampleTransactions);
+  const inventoryValue = calculateInventoryValue(items);
+  const monthlyRevenue = calculateTotalRevenue(transactions);
+  const monthlyExpenditure = calculateTotalExpenditure(transactions);
   const profit = calculateProfit(monthlyRevenue, monthlyExpenditure);
-  const lowStockItems = getLowStockItems(sampleInventoryItems);
+  const lowStockItems = getLowStockItems(items);
   
   // Data for monthly sales chart
   const monthlySalesData = [
@@ -44,18 +45,21 @@ const Dashboard: React.FC = () => {
     { name: 'Sep', sales: 560000 },
   ];
 
-  // Data for inventory by category
-  const categoryData = [
-    { name: 'Grains', value: 430 },
-    { name: 'Oils', value: 28 },
-    { name: 'Sweeteners', value: 120 },
-    { name: 'Condiments', value: 200 },
-  ];
+  // Data for inventory by category (from real data)
+  const categoryData = items.reduce((acc, item) => {
+    const existing = acc.find(cat => cat.name === item.category);
+    if (existing) {
+      existing.value += item.currentStock;
+    } else {
+      acc.push({ name: item.category, value: item.currentStock });
+    }
+    return acc;
+  }, [] as { name: string; value: number }[]);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   // Recent transactions for display
-  const recentTransactions = sampleTransactions
+  const recentTransactions = transactions
     .sort((a, b) => b.date.getTime() - a.date.getTime())
     .slice(0, 5);
 

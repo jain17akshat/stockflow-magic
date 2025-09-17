@@ -23,7 +23,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
   const menuItems = [
     { name: 'Dashboard', icon: <BarChart4 className="w-5 h-5" />, path: '/' },
     { name: 'Inventory', icon: <Package className="w-5 h-5" />, path: '/inventory' },
-    { name: 'Add Stock', icon: <PlusCircle className="w-5 h-5" />, path: '/add-stock' },
     { name: 'Sales', icon: <ShoppingCart className="w-5 h-5" />, path: '/sales' },
     { name: 'Reports', icon: <FileText className="w-5 h-5" />, path: '/reports' },
     { name: 'Alerts', icon: <Bell className="w-5 h-5" />, path: '/alerts' },

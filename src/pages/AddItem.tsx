@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -19,79 +18,83 @@ const generateSKU = (name: string, category: string) => {
 const AddItem: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { addItem } = useInventory();
+  const { addItem, suppliers, addSupplier } = useInventory();
   const [formData, setFormData] = useState({
     name: '',
-    category: '',
-    currentStock: '',
-    purchasePrice: '',
-    sellingPrice: '',
-    supplier: '',
-    lowStockThreshold: '10',
     sku: '',
+    category: '',
+    currentStock: 0,
+    lowStockThreshold: 10,
+    purchasePrice: 0,
+    sellingPrice: 0,
+    supplier: ''
   });
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData({ ...formData, [name]: value });
-    
-    // Auto-generate SKU when both name and category are provided
-    if (name === 'category' && formData.name) {
-      const sku = generateSKU(formData.name, value);
-      setFormData(prev => ({ ...prev, sku }));
-    } else if (name === 'name' && formData.category) {
-      const sku = generateSKU(value, formData.category);
-      setFormData(prev => ({ ...prev, sku }));
-    }
-  };
+  const [newSupplier, setNewSupplier] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.name || !formData.category || !formData.currentStock || 
-        !formData.purchasePrice || !formData.sellingPrice || !formData.supplier) {
+    if (!formData.name || !formData.sku || !formData.category) {
       toast({
-        title: "Error",
+        title: "Validation Error",
         description: "Please fill in all required fields",
         variant: "destructive"
       });
       return;
     }
 
-    // Add the item to inventory
-    addItem({
-      name: formData.name,
-      sku: formData.sku || generateSKU(formData.name, formData.category),
-      category: formData.category,
-      currentStock: parseInt(formData.currentStock),
-      lowStockThreshold: parseInt(formData.lowStockThreshold),
-      purchasePrice: parseFloat(formData.purchasePrice),
-      sellingPrice: parseFloat(formData.sellingPrice),
-      supplier: formData.supplier,
-    });
+    // Add new supplier if provided
+    if (newSupplier.trim()) {
+      addSupplier(newSupplier.trim());
+      formData.supplier = newSupplier.trim();
+    }
+
+    addItem(formData);
     
-    // Show success message
     toast({
       title: "Item Added",
-      description: `Successfully added ${formData.name} to inventory.`,
+      description: `${formData.name} has been added to inventory successfully`,
     });
+
+    // Reset form
+    setFormData({
+      name: '',
+      sku: '',
+      category: '',
+      currentStock: 0,
+      lowStockThreshold: 10,
+      purchasePrice: 0,
+      sellingPrice: 0,
+      supplier: ''
+    });
+    setNewSupplier('');
     
-    // Navigate back to inventory page
     navigate('/inventory');
   };
 
-  const handleCancel = () => {
-    navigate('/inventory');
+  const handleInputChange = (field: keyof typeof formData, value: string | number) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Auto-generate SKU when both name and category are provided
+    if ((field === 'name' || field === 'category') && formData.name && formData.category) {
+      const name = field === 'name' ? value as string : formData.name;
+      const category = field === 'category' ? value as string : formData.category;
+      if (name && category) {
+        const sku = generateSKU(name, category);
+        setFormData(prev => ({ ...prev, sku }));
+      }
+    }
   };
+
+  const categories = ['Grains', 'Oils', 'Sweeteners', 'Condiments', 'Spices', 'Lentils'];
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Add New Item</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Add New Item</h1>
+        <p className="text-gray-500">Add a new item to your inventory</p>
+      </div>
       
       <Card>
         <CardHeader>
@@ -101,141 +104,133 @@ const AddItem: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Item Name*</Label>
+                <Label htmlFor="name">Item Name *</Label>
                 <Input
                   id="name"
-                  name="name"
-                  placeholder="Enter item name"
                   value={formData.name}
-                  onChange={handleInputChange}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  placeholder="Enter item name"
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="category">Category*</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => handleSelectChange('category', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Food">Food</SelectItem>
-                    <SelectItem value="Beverage">Beverage</SelectItem>
-                    <SelectItem value="Electronics">Electronics</SelectItem>
-                    <SelectItem value="Clothing">Clothing</SelectItem>
-                    <SelectItem value="Home Goods">Home Goods</SelectItem>
-                    <SelectItem value="Office Supplies">Office Supplies</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="sku">SKU (Auto-generated)</Label>
+                <Label htmlFor="sku">SKU *</Label>
                 <Input
                   id="sku"
-                  name="sku"
                   value={formData.sku}
-                  onChange={handleInputChange}
-                  disabled
-                  className="bg-gray-100"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="currentStock">Initial Stock*</Label>
-                <Input
-                  id="currentStock"
-                  name="currentStock"
-                  type="number"
-                  placeholder="Enter initial stock quantity"
-                  value={formData.currentStock}
-                  onChange={handleInputChange}
-                  min="0"
+                  onChange={(e) => handleInputChange('sku', e.target.value)}
+                  placeholder="Enter SKU or auto-generate"
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="purchasePrice">Purchase Price*</Label>
-                <Input
-                  id="purchasePrice"
-                  name="purchasePrice"
-                  type="number"
-                  placeholder="Enter cost price per unit"
-                  value={formData.purchasePrice}
-                  onChange={handleInputChange}
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="sellingPrice">Selling Price*</Label>
-                <Input
-                  id="sellingPrice"
-                  name="sellingPrice"
-                  type="number"
-                  placeholder="Enter selling price per unit"
-                  value={formData.sellingPrice}
-                  onChange={handleInputChange}
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="supplier">Supplier*</Label>
+                <Label htmlFor="category">Category *</Label>
                 <Select
-                  value={formData.supplier}
-                  onValueChange={(value) => handleSelectChange('supplier', value)}
+                  value={formData.category}
+                  onValueChange={(value) => handleInputChange('category', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a supplier" />
+                    <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Farm Fresh Supplies">Farm Fresh Supplies</SelectItem>
-                    <SelectItem value="Organic Mills">Organic Mills</SelectItem>
-                    <SelectItem value="Sweet Industries">Sweet Industries</SelectItem>
-                    <SelectItem value="Pure Oils Ltd">Pure Oils Ltd</SelectItem>
-                    <SelectItem value="Salt Factory">Salt Factory</SelectItem>
-                    <SelectItem value="Electronics Wholesale">Electronics Wholesale</SelectItem>
-                    <SelectItem value="Fashion Fabrics">Fashion Fabrics</SelectItem>
-                    <SelectItem value="Home Essentials">Home Essentials</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="lowStockThreshold">Low Stock Alert Threshold</Label>
+                <Label htmlFor="currentStock">Initial Stock</Label>
                 <Input
-                  id="lowStockThreshold"
-                  name="lowStockThreshold"
+                  id="currentStock"
                   type="number"
-                  placeholder="Enter low stock threshold"
-                  value={formData.lowStockThreshold}
-                  onChange={handleInputChange}
-                  min="1"
+                  value={formData.currentStock}
+                  onChange={(e) => handleInputChange('currentStock', parseInt(e.target.value) || 0)}
+                  placeholder="Initial stock quantity"
+                  min="0"
                 />
               </div>
               
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="description">Description (Optional)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="lowStockThreshold">Low Stock Threshold</Label>
                 <Input
-                  id="description"
-                  name="description"
-                  placeholder="Enter item description"
+                  id="lowStockThreshold"
+                  type="number"
+                  value={formData.lowStockThreshold}
+                  onChange={(e) => handleInputChange('lowStockThreshold', parseInt(e.target.value) || 0)}
+                  placeholder="Low stock alert threshold"
+                  min="0"
                 />
               </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="purchasePrice">Purchase Price (₹)</Label>
+                <Input
+                  id="purchasePrice"
+                  type="number"
+                  step="0.01"
+                  value={formData.purchasePrice}
+                  onChange={(e) => handleInputChange('purchasePrice', parseFloat(e.target.value) || 0)}
+                  placeholder="0.00"
+                  min="0"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="sellingPrice">Selling Price (₹)</Label>
+                <Input
+                  id="sellingPrice"
+                  type="number"
+                  step="0.01"
+                  value={formData.sellingPrice}
+                  onChange={(e) => handleInputChange('sellingPrice', parseFloat(e.target.value) || 0)}
+                  placeholder="0.00"
+                  min="0"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="supplier">Supplier</Label>
+                <Select
+                  value={formData.supplier}
+                  onValueChange={(value) => handleInputChange('supplier', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select supplier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliers.map((supplier) => (
+                      <SelectItem key={supplier} value={supplier}>
+                        {supplier}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" type="button" onClick={handleCancel}>Cancel</Button>
-              <Button type="submit">Add Item</Button>
+
+            <div className="space-y-2">
+              <Label htmlFor="newSupplier">Add New Supplier (Optional)</Label>
+              <Input
+                id="newSupplier"
+                value={newSupplier}
+                onChange={(e) => setNewSupplier(e.target.value)}
+                placeholder="Enter new supplier name"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button type="submit" className="flex-1">
+                Add Item
+              </Button>
+              <Button type="button" variant="outline" onClick={() => navigate('/inventory')}>
+                Cancel
+              </Button>
             </div>
           </form>
         </CardContent>

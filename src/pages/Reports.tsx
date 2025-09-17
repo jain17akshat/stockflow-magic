@@ -31,13 +31,12 @@ import {
   Cell
 } from 'recharts';
 import { 
-  sampleInventoryItems, 
-  sampleTransactions, 
   formatCurrency,
   generateMonthlyReport,
   StockTransaction,
   calculateInventoryValue
 } from '@/utils/inventoryUtils';
+import { useInventory } from '@/contexts/InventoryContext';
 import { Download, Filter, FileText, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -50,6 +49,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 
 const Reports: React.FC = () => {
   const { toast } = useToast();
+  const { items, transactions } = useInventory();
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth().toString());
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear().toString());
@@ -57,8 +57,8 @@ const Reports: React.FC = () => {
   
   // Generate report data based on selected month and year
   const report = generateMonthlyReport(
-    sampleInventoryItems,
-    sampleTransactions,
+    items,
+    transactions,
     parseInt(selectedMonth),
     parseInt(selectedYear)
   );
@@ -80,7 +80,7 @@ const Reports: React.FC = () => {
   report.transactions
     .filter(t => t.type === 'sell')
     .forEach(transaction => {
-      const item = sampleInventoryItems.find(i => i.id === transaction.itemId);
+      const item = items.find(i => i.id === transaction.itemId);
       if (item) {
         if (!categorySales[item.category]) {
           categorySales[item.category] = 0;
@@ -225,7 +225,7 @@ const Reports: React.FC = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-sm font-medium text-gray-500">Inventory Value</p>
-                    <h3 className="text-2xl font-bold mt-1">{formatCurrency(calculateInventoryValue(sampleInventoryItems))}</h3>
+                    <h3 className="text-2xl font-bold mt-1">{formatCurrency(calculateInventoryValue(items))}</h3>
                   </div>
                   <div className="p-2 rounded-full bg-amber-100">
                     <FileText className="h-6 w-6 text-amber-600" />

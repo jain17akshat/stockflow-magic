@@ -30,23 +30,23 @@ import {
   Line
 } from 'recharts';
 import { 
-  sampleInventoryItems, 
-  sampleTransactions, 
   formatCurrency,
   StockTransaction
 } from '@/utils/inventoryUtils';
+import { useInventory } from '@/contexts/InventoryContext';
 import { Download, ShoppingCart, DollarSign, TrendingUp, Calendar, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Sales: React.FC = () => {
   const { toast } = useToast();
+  const { items, transactions } = useInventory();
   const currentDate = new Date();
   const [timeRange, setTimeRange] = useState('month');
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth().toString());
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear().toString());
   
   // Filter sales transactions (only sell type)
-  const salesTransactions = sampleTransactions.filter(t => t.type === 'sell');
+  const salesTransactions = transactions.filter(t => t.type === 'sell');
   
   // Filter by selected time period
   const filteredSales = salesTransactions.filter(transaction => {
@@ -74,7 +74,7 @@ const Sales: React.FC = () => {
   // Sales by category
   const salesByCategory: Record<string, number> = {};
   filteredSales.forEach(sale => {
-    const item = sampleInventoryItems.find(i => i.id === sale.itemId);
+    const item = items.find(i => i.id === sale.itemId);
     if (item) {
       if (!salesByCategory[item.category]) {
         salesByCategory[item.category] = 0;
