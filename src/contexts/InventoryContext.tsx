@@ -27,20 +27,119 @@ export const useInventory = () => {
 export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<InventoryItem[]>(() => {
     const saved = localStorage.getItem('inventory-items');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    // Placeholder data for demo purposes
+    return [
+      {
+        id: 'demo-1',
+        name: 'Wireless Bluetooth Headphones',
+        sku: 'WBH-001',
+        category: 'Electronics',
+        currentStock: 25,
+        lowStockThreshold: 10,
+        purchasePrice: 1500,
+        sellingPrice: 2500,
+        supplier: 'TechMart Electronics',
+        lastUpdated: new Date()
+      },
+      {
+        id: 'demo-2',
+        name: 'USB-C Charging Cable',
+        sku: 'UCC-002',
+        category: 'Electronics',
+        currentStock: 8,
+        lowStockThreshold: 15,
+        purchasePrice: 200,
+        sellingPrice: 350,
+        supplier: 'Cable World',
+        lastUpdated: new Date()
+      },
+      {
+        id: 'demo-3',
+        name: 'Organic Green Tea',
+        sku: 'OGT-003',
+        category: 'Food & Beverages',
+        currentStock: 50,
+        lowStockThreshold: 20,
+        purchasePrice: 150,
+        sellingPrice: 250,
+        supplier: 'Organic Supplies Ltd',
+        lastUpdated: new Date()
+      },
+      {
+        id: 'demo-4',
+        name: 'Cotton T-Shirt',
+        sku: 'CTS-004',
+        category: 'Clothing',
+        currentStock: 3,
+        lowStockThreshold: 5,
+        purchasePrice: 300,
+        sellingPrice: 599,
+        supplier: 'Fashion Hub',
+        lastUpdated: new Date()
+      }
+    ];
   });
   
   const [transactions, setTransactions] = useState<StockTransaction[]>(() => {
     const saved = localStorage.getItem('inventory-transactions');
-    return saved ? JSON.parse(saved).map((t: any) => ({
-      ...t,
-      date: new Date(t.date)
-    })) : [];
+    if (saved) {
+      return JSON.parse(saved).map((t: any) => ({
+        ...t,
+        date: new Date(t.date)
+      }));
+    }
+    // Placeholder transactions for demo purposes
+    return [
+      {
+        id: 'trans-1',
+        date: new Date(Date.now() - 86400000), // Yesterday
+        itemId: 'demo-1',
+        itemName: 'Wireless Bluetooth Headphones',
+        type: 'add',
+        quantity: 30,
+        unitPrice: 1500,
+        totalPrice: 45000,
+        supplier: 'TechMart Electronics'
+      },
+      {
+        id: 'trans-2',
+        date: new Date(Date.now() - 43200000), // 12 hours ago
+        itemId: 'demo-1',
+        itemName: 'Wireless Bluetooth Headphones',
+        type: 'sell',
+        quantity: 5,
+        unitPrice: 2500,
+        totalPrice: 12500,
+        customer: 'John Doe'
+      },
+      {
+        id: 'trans-3',
+        date: new Date(),
+        itemId: 'demo-2',
+        itemName: 'USB-C Charging Cable',
+        type: 'sell',
+        quantity: 2,
+        unitPrice: 350,
+        totalPrice: 700,
+        customer: 'Walk-in Customer'
+      }
+    ];
   });
   
   const [suppliers, setSuppliers] = useState<string[]>(() => {
     const saved = localStorage.getItem('inventory-suppliers');
-    return saved ? JSON.parse(saved) : ['Shree Ram Enterprises', 'Lakshmi Traders', 'Bharat Supply Co.'];
+    return saved ? JSON.parse(saved) : [
+      'TechMart Electronics',
+      'Cable World', 
+      'Organic Supplies Ltd',
+      'Fashion Hub',
+      'Shree Ram Enterprises', 
+      'Lakshmi Traders', 
+      'Bharat Supply Co.'
+    ];
   });
 
   // Save to localStorage whenever state changes
