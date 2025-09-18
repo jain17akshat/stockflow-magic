@@ -13,10 +13,8 @@ import {
 } from 'recharts';
 import { Download, Filter, FileText, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-// Utility
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
+import { useInventory } from '@/contexts/InventoryContext';
+import { formatCurrency } from '@/utils/inventoryUtils';
 
 const MONTHS = [
   'January','February','March','April','May','June',
@@ -27,48 +25,11 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 
 const Reports: React.FC = () => {
   const { toast } = useToast();
+  const { items, transactions } = useInventory();
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth().toString());
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear().toString());
   const [reportType, setReportType] = useState<'overview' | 'transactions'>('overview');
-
-  // -------------------------
-  // ✅ Placeholder Data
-  // -------------------------
-  const items = [
-    { id: '1', name: 'Notebook', category: 'Stationery', quantity: 50, unitPrice: 50 },
-    { id: '2', name: 'Ball Pen', category: 'Stationery', quantity: 200, unitPrice: 10 },
-    { id: '3', name: 'Coffee Mug', category: 'Kitchen', quantity: 30, unitPrice: 150 },
-    { id: '4', name: 'T-shirt', category: 'Clothing', quantity: 40, unitPrice: 400 },
-  ];
-
-  const transactions = [
-    {
-      id: 't1', type: 'add', date: new Date('2025-09-01'),
-      itemId: '1', itemName: 'Notebook', quantity: 100, unitPrice: 30,
-      totalPrice: 3000, supplier: 'ABC Traders'
-    },
-    {
-      id: 't2', type: 'sell', date: new Date('2025-09-03'),
-      itemId: '1', itemName: 'Notebook', quantity: 20, unitPrice: 50,
-      totalPrice: 1000, customer: 'Ravi'
-    },
-    {
-      id: 't3', type: 'sell', date: new Date('2025-09-05'),
-      itemId: '2', itemName: 'Ball Pen', quantity: 50, unitPrice: 10,
-      totalPrice: 500, customer: 'Sneha'
-    },
-    {
-      id: 't4', type: 'add', date: new Date('2025-09-08'),
-      itemId: '4', itemName: 'T-shirt', quantity: 30, unitPrice: 250,
-      totalPrice: 7500, supplier: 'ClothMart'
-    },
-    {
-      id: 't5', type: 'sell', date: new Date('2025-09-10'),
-      itemId: '4', itemName: 'T-shirt', quantity: 10, unitPrice: 400,
-      totalPrice: 4000, customer: 'Amit'
-    },
-  ];
 
   // Filter transactions by selected month and year
   const filteredTx = transactions.filter(t => {
@@ -89,7 +50,7 @@ const Reports: React.FC = () => {
     .reduce((sum,t)=>sum+t.quantity,0);
   const stockSold = filteredTx.filter(t=>t.type==='sell')
     .reduce((sum,t)=>sum+t.quantity,0);
-  const inventoryValue = items.reduce((sum,i)=>sum+(i.quantity*i.unitPrice),0);
+  const inventoryValue = items.reduce((sum,i)=>sum+(i.currentStock*i.sellingPrice),0);
 
   const stockMovementData = [
     { name: 'Stock Added', value: stockAdded },
@@ -266,21 +227,21 @@ const Reports: React.FC = () => {
                   {filteredTx.length===0 ? (
                     <TableRow><TableCell colSpan={7} className="text-center py-4">No data</TableCell></TableRow>
                   ) : filteredTx.map(t=>(
-                    <TableRow key={t.id}>
-                      <TableCell>{t.date.toLocaleDateString()}</TableCell>
-                      <TableCell>{t.itemName}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          t.type==='add'?'bg-green-100 text-green-800':'bg-amber-100 text-amber-800'
-                        }`}>
-                          {t.type==='add'?'Stock Added':'Stock Sold'}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">{t.quantity}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(t.unitPrice)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(t.totalPrice)}</TableCell>
-                      <TableCell>{t.type==='add'?t.supplier:t.customer}</TableCell>
-                    </TableRow>
+                     <TableRow key={t.id}>
+                       <TableCell>{new Date(t.date).toLocaleDateString()}</TableCell>
+                       <TableCell>{t.itemName}</TableCell>
+                       <TableCell>
+                         <span className={`px-2 py-1 rounded-full text-xs ${
+                           t.type==='add'?'bg-green-100 text-green-800':'bg-amber-100 text-amber-800'
+                         }`}>
+                           {t.type==='add'?'Stock Added':'Stock Sold'}
+                         </span>
+                       </TableCell>
+                       <TableCell className="text-right">{t.quantity}</TableCell>
+                       <TableCell className="text-right">{formatCurrency(t.unitPrice)}</TableCell>
+                       <TableCell className="text-right">{formatCurrency(t.totalPrice)}</TableCell>
+                       <TableCell>{t.type==='add'?t.supplier:(t.customer || 'Walk-in Customer')}</TableCell>
+                     </TableRow>
                   ))}
                 </TableBody>
               </Table>

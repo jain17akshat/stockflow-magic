@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { InventoryItem, StockTransaction, sampleInventoryItems, sampleTransactions } from '@/utils/inventoryUtils';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { InventoryItem, StockTransaction } from '@/utils/inventoryUtils';
 
 interface InventoryContextType {
   items: InventoryItem[];
@@ -25,9 +25,36 @@ export const useInventory = () => {
 };
 
 export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<InventoryItem[]>([]);
-  const [transactions, setTransactions] = useState<StockTransaction[]>([]);
-  const [suppliers, setSuppliers] = useState<string[]>(['Shree Ram Enterprises', 'Lakshmi Traders', 'Bharat Supply Co.']);
+  const [items, setItems] = useState<InventoryItem[]>(() => {
+    const saved = localStorage.getItem('inventory-items');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  const [transactions, setTransactions] = useState<StockTransaction[]>(() => {
+    const saved = localStorage.getItem('inventory-transactions');
+    return saved ? JSON.parse(saved).map((t: any) => ({
+      ...t,
+      date: new Date(t.date)
+    })) : [];
+  });
+  
+  const [suppliers, setSuppliers] = useState<string[]>(() => {
+    const saved = localStorage.getItem('inventory-suppliers');
+    return saved ? JSON.parse(saved) : ['Shree Ram Enterprises', 'Lakshmi Traders', 'Bharat Supply Co.'];
+  });
+
+  // Save to localStorage whenever state changes
+  useEffect(() => {
+    localStorage.setItem('inventory-items', JSON.stringify(items));
+  }, [items]);
+
+  useEffect(() => {
+    localStorage.setItem('inventory-transactions', JSON.stringify(transactions));
+  }, [transactions]);
+
+  useEffect(() => {
+    localStorage.setItem('inventory-suppliers', JSON.stringify(suppliers));
+  }, [suppliers]);
 
   const addItem = (itemData: Omit<InventoryItem, 'id' | 'lastUpdated'>) => {
     const newItem: InventoryItem = {

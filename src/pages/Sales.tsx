@@ -11,38 +11,20 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line
 } from 'recharts';
-import { Download, Filter } from 'lucide-react';
+import { Download, Filter, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
+import { useInventory } from '@/contexts/InventoryContext';
+import { formatCurrency } from '@/utils/inventoryUtils';
+import RecordSaleDialog from '@/components/RecordSaleDialog';
 
 const Sales: React.FC = () => {
   const { toast } = useToast();
+  const { items, transactions } = useInventory();
   const now = new Date();
   const [timeRange, setTimeRange] = useState('month');
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth().toString());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear().toString());
-
-  // ✅ Inventory placeholder items (rice, grains, spices, oils)
-  const items = [
-    { id: '1', name: 'Basmati Rice', category: 'Grains' },
-    { id: '2', name: 'Wheat Flour', category: 'Grains' },
-    { id: '3', name: 'Turmeric Powder', category: 'Spices' },
-    { id: '4', name: 'Red Chili Powder', category: 'Spices' },
-    { id: '5', name: 'Mustard Oil', category: 'Oils' },
-    { id: '6', name: 'Groundnut Oil', category: 'Oils' },
-  ];
-
-  // ✅ Placeholder sales transactions
-  const transactions = [
-    { id: 't1', type: 'sell', date: new Date('2025-09-02'), itemId: '1', itemName: 'Basmati Rice', quantity: 25, unitPrice: 80, totalPrice: 2000, customer: 'Ravi' },
-    { id: 't2', type: 'sell', date: new Date('2025-09-03'), itemId: '2', itemName: 'Wheat Flour', quantity: 30, unitPrice: 40, totalPrice: 1200, customer: 'Asha' },
-    { id: 't3', type: 'sell', date: new Date('2025-09-05'), itemId: '3', itemName: 'Turmeric Powder', quantity: 10, unitPrice: 150, totalPrice: 1500, customer: 'Sneha' },
-    { id: 't4', type: 'sell', date: new Date('2025-09-06'), itemId: '4', itemName: 'Red Chili Powder', quantity: 8, unitPrice: 180, totalPrice: 1440, customer: 'Kiran' },
-    { id: 't5', type: 'sell', date: new Date('2025-09-08'), itemId: '5', itemName: 'Mustard Oil', quantity: 15, unitPrice: 160, totalPrice: 2400, customer: 'Walk-in' },
-    { id: 't6', type: 'sell', date: new Date('2025-09-10'), itemId: '6', itemName: 'Groundnut Oil', quantity: 10, unitPrice: 200, totalPrice: 2000, customer: 'Amit' },
-  ];
+  const [isSaleDialogOpen, setIsSaleDialogOpen] = useState(false);
 
   const salesTransactions = transactions.filter(t => t.type === 'sell');
 
@@ -91,11 +73,17 @@ const Sales: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Sales</h1>
-          <p className="text-gray-500">Track and analyze your grocery sales</p>
+          <p className="text-gray-500">Track and analyze your sales performance</p>
         </div>
-        <Button className="gap-2" onClick={handleExport}>
-          <Download className="h-4 w-4"/> Export Sales
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setIsSaleDialogOpen(true)}>
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Record Sale
+          </Button>
+          <Button className="gap-2" onClick={handleExport}>
+            <Download className="h-4 w-4"/> Export Sales
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -211,23 +199,28 @@ const Sales: React.FC = () => {
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-4 text-gray-500">No sales found</TableCell>
                   </TableRow>
-                ) : filteredSales.map(s => (
-                  <TableRow key={s.id}>
-                    <TableCell>{s.date.toLocaleDateString()}</TableCell>
-                    <TableCell>{s.itemName}</TableCell>
-                    <TableCell>{s.customer}</TableCell>
-                    <TableCell className="text-right">{s.quantity}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(s.unitPrice)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(s.totalPrice)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
+                 ) : filteredSales.map(s => (
+                   <TableRow key={s.id}>
+                     <TableCell>{new Date(s.date).toLocaleDateString()}</TableCell>
+                     <TableCell>{s.itemName}</TableCell>
+                     <TableCell>{s.customer || 'Walk-in Customer'}</TableCell>
+                     <TableCell className="text-right">{s.quantity}</TableCell>
+                     <TableCell className="text-right">{formatCurrency(s.unitPrice)}</TableCell>
+                     <TableCell className="text-right">{formatCurrency(s.totalPrice)}</TableCell>
+                   </TableRow>
+                 ))}
+               </TableBody>
+             </Table>
+           </div>
+         </CardContent>
+       </Card>
 
-export default Sales;
+       <RecordSaleDialog
+         open={isSaleDialogOpen}
+         onOpenChange={setIsSaleDialogOpen}
+       />
+     </div>
+   );
+ };
+
+ export default Sales;
