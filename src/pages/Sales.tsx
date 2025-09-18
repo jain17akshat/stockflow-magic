@@ -26,9 +26,61 @@ const Sales: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState(now.getFullYear().toString());
   const [isSaleDialogOpen, setIsSaleDialogOpen] = useState(false);
 
-  const salesTransactions = transactions.filter(t => t.type === 'sell');
+  // Hardcoded sales data for demonstration
+  const hardcodedSales = [
+    {
+      id: 'sale-1',
+      date: new Date('2024-01-15'),
+      itemName: 'Wireless Bluetooth Headphones',
+      customer: 'John Doe',
+      quantity: 2,
+      unitPrice: 2500,
+      totalPrice: 5000,
+      category: 'Electronics'
+    },
+    {
+      id: 'sale-2',
+      date: new Date('2024-01-14'),
+      itemName: 'USB-C Charging Cable',
+      customer: 'Jane Smith',
+      quantity: 5,
+      unitPrice: 350,
+      totalPrice: 1750,
+      category: 'Electronics'
+    },
+    {
+      id: 'sale-3',
+      date: new Date('2024-01-13'),
+      itemName: 'Organic Green Tea',
+      customer: 'Walk-in Customer',
+      quantity: 10,
+      unitPrice: 250,
+      totalPrice: 2500,
+      category: 'Food & Beverages'
+    },
+    {
+      id: 'sale-4',
+      date: new Date('2024-01-12'),
+      itemName: 'Cotton T-Shirt',
+      customer: 'Mike Johnson',
+      quantity: 3,
+      unitPrice: 599,
+      totalPrice: 1797,
+      category: 'Clothing'
+    },
+    {
+      id: 'sale-5',
+      date: new Date('2024-01-11'),
+      itemName: 'Wireless Bluetooth Headphones',
+      customer: 'Sarah Wilson',
+      quantity: 1,
+      unitPrice: 2500,
+      totalPrice: 2500,
+      category: 'Electronics'
+    }
+  ];
 
-  const filteredSales = salesTransactions.filter(s => {
+  const filteredSales = hardcodedSales.filter(s => {
     const d = new Date(s.date);
     if (timeRange === 'all') return true;
     if (timeRange === 'month')
@@ -44,9 +96,7 @@ const Sales: React.FC = () => {
 
   const salesByCategory: Record<string, number> = {};
   filteredSales.forEach(s => {
-    const item = items.find(i => i.id === s.itemId);
-    if (!item) return;
-    salesByCategory[item.category] = (salesByCategory[item.category] || 0) + s.totalPrice;
+    salesByCategory[s.category] = (salesByCategory[s.category] || 0) + s.totalPrice;
   });
 
   const categoryChartData = Object.entries(salesByCategory)

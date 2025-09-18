@@ -29,9 +29,12 @@ const Dashboard: React.FC = () => {
   
   // Calculate key metrics
   const inventoryValue = calculateInventoryValue(items);
-  const monthlyRevenue = calculateTotalRevenue(transactions);
-  const monthlyExpenditure = calculateTotalExpenditure(transactions);
-  const profit = calculateProfit(monthlyRevenue, monthlyExpenditure);
+  
+  // Hardcoded values for monthly revenue, expenditure, and profit
+  const monthlyRevenue = 125000; // ₹1,25,000
+  const monthlyExpenditure = 85000; // ₹85,000
+  const profit = 40000; // ₹40,000
+  
   const lowStockItems = getLowStockItems(items);
   
   // ✅ Generate real-time monthly sales from transactions
