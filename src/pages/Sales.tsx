@@ -13,20 +13,18 @@ import {
 } from 'recharts';
 import { Download, Filter, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useInventory } from '@/contexts/InventoryContext';
 import { formatCurrency } from '@/utils/inventoryUtils';
 import RecordSaleDialog from '@/components/RecordSaleDialog';
 
 const Sales: React.FC = () => {
   const { toast } = useToast();
-  const { items, transactions } = useInventory();
   const now = new Date();
   const [timeRange, setTimeRange] = useState('month');
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth().toString());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear().toString());
   const [isSaleDialogOpen, setIsSaleDialogOpen] = useState(false);
 
-  // Hardcoded sales data for demonstration
+  // Hardcoded sales data
   const hardcodedSales = [
     {
       id: 'sale-1',
@@ -80,6 +78,7 @@ const Sales: React.FC = () => {
     }
   ];
 
+  // Filter by range/month/year
   const filteredSales = hardcodedSales.filter(s => {
     const d = new Date(s.date);
     if (timeRange === 'all') return true;
@@ -90,24 +89,25 @@ const Sales: React.FC = () => {
     return true;
   });
 
+  // Summary stats
   const totalRevenue = filteredSales.reduce((sum, s) => sum + s.totalPrice, 0);
   const totalUnitsSold = filteredSales.reduce((sum, s) => sum + s.quantity, 0);
   const avgSaleValue = filteredSales.length ? totalRevenue / filteredSales.length : 0;
 
+  // Category chart data
   const salesByCategory: Record<string, number> = {};
   filteredSales.forEach(s => {
     salesByCategory[s.category] = (salesByCategory[s.category] || 0) + s.totalPrice;
   });
-
   const categoryChartData = Object.entries(salesByCategory)
     .map(([category, revenue]) => ({ category, revenue }));
 
+  // Date chart data
   const salesByDate: Record<string, number> = {};
   filteredSales.forEach(s => {
     const dateStr = new Date(s.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
     salesByDate[dateStr] = (salesByDate[dateStr] || 0) + s.totalPrice;
   });
-
   const dateChartData = Object.entries(salesByDate)
     .map(([date, revenue]) => ({ date, revenue }));
 
@@ -271,6 +271,6 @@ const Sales: React.FC = () => {
        />
      </div>
    );
- };
+};
 
- export default Sales;
+export default Sales;
