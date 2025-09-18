@@ -26,23 +26,23 @@ const Sales: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState(now.getFullYear().toString());
   const [isSaleDialogOpen, setIsSaleDialogOpen] = useState(false);
 
-  // --- Hardcoded grocery sales ---
+  // 💾 Hardcoded sales data for grocery-like items
   const hardcodedSales = [
     {
       id: 'sale-1',
-      date: new Date('2024-01-15'),
-      itemName: 'Basmati Rice (5kg)',
-      customer: 'Ravi Kumar',
+      date: new Date('2025-09-12'),
+      itemName: ':contentReference[oaicite:0]{index=0} Basmati Rice (5kg)',
+      customer: 'Ramesh Kumar',
       quantity: 3,
-      unitPrice: 600,
-      totalPrice: 1800,
-      category: 'Grains'
+      unitPrice: 550,
+      totalPrice: 1650,
+      category: 'Rice'
     },
     {
       id: 'sale-2',
-      date: new Date('2024-01-14'),
-      itemName: 'Sunflower Oil (1L)',
-      customer: 'Anita Sharma',
+      date: new Date('2025-09-11'),
+      itemName: ':contentReference[oaicite:1]{index=1} Gold Oil (1L)',
+      customer: 'Seema Patel',
       quantity: 6,
       unitPrice: 180,
       totalPrice: 1080,
@@ -50,53 +50,33 @@ const Sales: React.FC = () => {
     },
     {
       id: 'sale-3',
-      date: new Date('2024-01-13'),
-      itemName: 'Turmeric Powder (200g)',
+      date: new Date('2025-09-10'),
+      itemName: ':contentReference[oaicite:2]{index=2} Garam Masala (100g)',
       customer: 'Walk-in Customer',
       quantity: 10,
-      unitPrice: 70,
-      totalPrice: 700,
+      unitPrice: 85,
+      totalPrice: 850,
       category: 'Spices'
     },
     {
       id: 'sale-4',
-      date: new Date('2024-01-12'),
-      itemName: 'Wheat Flour (10kg)',
-      customer: 'Meena Patel',
-      quantity: 2,
-      unitPrice: 450,
-      totalPrice: 900,
-      category: 'Grains'
+      date: new Date('2025-09-09'),
+      itemName: ':contentReference[oaicite:3]{index=3} Brown Rice (1kg)',
+      customer: 'Vikas Sharma',
+      quantity: 4,
+      unitPrice: 120,
+      totalPrice: 480,
+      category: 'Rice'
     },
     {
       id: 'sale-5',
-      date: new Date('2024-01-11'),
-      itemName: 'Mustard Oil (1L)',
-      customer: 'Arjun Singh',
-      quantity: 4,
-      unitPrice: 160,
-      totalPrice: 640,
-      category: 'Oils'
-    },
-    {
-      id: 'sale-6',
-      date: new Date('2024-01-10'),
-      itemName: 'Red Chili Powder (100g)',
-      customer: 'Ramesh Yadav',
-      quantity: 8,
-      unitPrice: 90,
-      totalPrice: 720,
-      category: 'Spices'
-    },
-    {
-      id: 'sale-7',
-      date: new Date('2024-01-09'),
-      itemName: 'Raw Sugar (1kg)',
-      customer: 'Walk-in Customer',
+      date: new Date('2025-09-08'),
+      itemName: ':contentReference[oaicite:4]{index=4} Sunflower Oil (1L)',
+      customer: 'Neha Singh',
       quantity: 5,
-      unitPrice: 55,
-      totalPrice: 275,
-      category: 'Staples'
+      unitPrice: 160,
+      totalPrice: 800,
+      category: 'Oils'
     }
   ];
 
@@ -139,10 +119,159 @@ const Sales: React.FC = () => {
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   return (
-    // --- JSX stays same as before ---
-    // (filters, summary cards, charts, table, RecordSaleDialog)
-    // -- keep your existing JSX here unchanged --
-  );
-};
+    <div className="space-y-6">
+      {/* ===== Header ===== */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold">Sales</h1>
+          <p className="text-gray-500">Track and analyze your sales performance</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setIsSaleDialogOpen(true)}>
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Record Sale
+          </Button>
+          <Button className="gap-2" onClick={handleExport}>
+            <Download className="h-4 w-4"/> Export Sales
+          </Button>
+        </div>
+      </div>
+
+      {/* ===== Filters ===== */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <CardTitle className="flex items-center gap-2"><Filter className="h-5 w-5"/> Filters</CardTitle>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Select value={timeRange} onValueChange={setTimeRange}>
+                <SelectTrigger className="w-40"><SelectValue placeholder="Range" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="month">This Month</SelectItem>
+                  <SelectItem value="year">This Year</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {timeRange === 'month' && (
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger className="w-40"><SelectValue placeholder="Month" /></SelectTrigger>
+                  <SelectContent>
+                    {MONTHS.map((m, i) => <SelectItem key={i} value={i.toString()}>{m}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {timeRange !== 'all' && (
+                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                  <SelectTrigger className="w-40"><SelectValue placeholder="Year" /></SelectTrigger>
+                  <SelectContent>
+                    {[2023, 2024, 2025].map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* ===== Summary ===== */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card><CardContent className="p-6">
+          <p className="text-sm text-gray-500">Total Revenue</p>
+          <h3 className="text-2xl font-bold">{formatCurrency(totalRevenue)}</h3>
+        </CardContent></Card>
+        <Card><CardContent className="p-6">
+          <p className="text-sm text-gray-500">Units Sold</p>
+          <h3 className="text-2xl font-bold">{totalUnitsSold}</h3>
+        </CardContent></Card>
+        <Card><CardContent className="p-6">
+          <p className="text-sm text-gray-500">Avg Sale Value</p>
+          <h3 className="text-2xl font-bold">{formatCurrency(avgSaleValue)}</h3>
+        </CardContent></Card>
+      </div>
+
+      {/* ===== Charts ===== */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader><CardTitle>Sales Trend</CardTitle></CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dateChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip formatter={v => [formatCurrency(v as number),'Revenue']} />
+                  <Legend />
+                  <Line type="monotone" dataKey="revenue" stroke="#8884d8" activeDot={{r:8}}/>
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Sales by Category</CardTitle></CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={categoryChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="category" />
+                  <YAxis />
+                  <Tooltip formatter={v => [formatCurrency(v as number),'Revenue']} />
+                  <Legend />
+                  <Bar dataKey="revenue" fill="#82ca9d" radius={[4,4,0,0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ===== Table ===== */}
+      <Card>
+        <CardHeader><CardTitle>Recent Sales</CardTitle></CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Item</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead className="text-right">Qty</TableHead>
+                  <TableHead className="text-right">Unit Price</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredSales.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-4 text-gray-500">No sales found</TableCell>
+                  </TableRow>
+                 ) : filteredSales.map(s => (
+                   <TableRow key={s.id}>
+                     <TableCell>{new Date(s.date).toLocaleDateString()}</TableCell>
+                     <TableCell>{s.itemName}</TableCell>
+                     <TableCell>{s.customer || 'Walk-in Customer'}</TableCell>
+                     <TableCell className="text-right">{s.quantity}</TableCell>
+                     <TableCell className="text-right">{formatCurrency(s.unitPrice)}</TableCell>
+                     <TableCell className="text-right">{formatCurrency(s.totalPrice)}</TableCell>
+                   </TableRow>
+                 ))}
+               </TableBody>
+             </Table>
+           </div>
+         </CardContent>
+       </Card>
+
+       <RecordSaleDialog
+         open={isSaleDialogOpen}
+         onOpenChange={setIsSaleDialogOpen}
+       />
+     </div>
+   );
+ };
 
 export default Sales;
