@@ -97,18 +97,18 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
         id: 'trans-1',
         date: new Date(Date.now() - 86400000), // Yesterday
         itemId: 'demo-1',
-        itemName: 'Wireless Bluetooth Headphones',
+        itemName: 'Basmati Rice',
         type: 'add',
         quantity: 30,
         unitPrice: 1500,
         totalPrice: 45000,
-        supplier: 'TechMart Electronics'
+        supplier: 'Basmati '
       },
       {
         id: 'trans-2',
         date: new Date(Date.now() - 43200000), // 12 hours ago
         itemId: 'demo-1',
-        itemName: 'Wireless Bluetooth Headphones',
+        itemName: 'SAFFOLA OATS',
         type: 'sell',
         quantity: 5,
         unitPrice: 2500,
@@ -119,7 +119,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
         id: 'trans-3',
         date: new Date(),
         itemId: 'demo-2',
-        itemName: 'USB-C Charging Cable',
+        itemName: 'LIPTON GREEN TEA',
         type: 'sell',
         quantity: 2,
         unitPrice: 350,
