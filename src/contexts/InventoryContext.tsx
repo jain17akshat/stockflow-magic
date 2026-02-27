@@ -34,7 +34,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     return [
       {
         id: 'demo-1',
-        name: 'Basmati Rice,
+        name: 'Basmati Rice',
         sku: 'WBH-001',
         category: 'RICE',
         currentStock: 25,
