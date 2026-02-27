@@ -107,7 +107,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
       {
         id: 'trans-2',
         date: new Date(Date.now() - 43200000), // 12 hours ago
-        itemId: 'demo-1',
+        itemId: 'demo-2',
         itemName: 'SAFFOLA OATS',
         type: 'sell',
         quantity: 5,
@@ -118,7 +118,7 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
       {
         id: 'trans-3',
         date: new Date(),
-        itemId: 'demo-2',
+        itemId: 'demo-3',
         itemName: 'LIPTON GREEN TEA',
         type: 'sell',
         quantity: 2,
