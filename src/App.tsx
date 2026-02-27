@@ -30,7 +30,6 @@ const App = () => (
             <Route path="/sales" element={<Layout><Sales /></Layout>} />
             {/* These routes will be implemented later */}
             <Route path="/alerts" element={<Layout><Dashboard /></Layout>} />
-            <Route path="/settings" element={<Layout><Dashboard /></Layout>} />
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
