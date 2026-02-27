@@ -34,26 +34,26 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
     return [
       {
         id: 'demo-1',
-        name: 'Wireless Bluetooth Headphones',
+        name: 'Basmati Rice,
         sku: 'WBH-001',
-        category: 'Electronics',
+        category: 'RICE',
         currentStock: 25,
         lowStockThreshold: 10,
         purchasePrice: 1500,
         sellingPrice: 2500,
-        supplier: 'TechMart Electronics',
+        supplier: 'JAIN TRADERS',
         lastUpdated: new Date()
       },
       {
         id: 'demo-2',
-        name: 'USB-C Charging Cable',
+        name: 'Aashirvaad Wheat',
         sku: 'UCC-002',
-        category: 'Electronics',
+        category: 'Aashirvaad',
         currentStock: 8,
         lowStockThreshold: 15,
         purchasePrice: 200,
         sellingPrice: 350,
-        supplier: 'Cable World',
+        supplier: 'Aashirvaad',
         lastUpdated: new Date()
       },
       {
@@ -70,14 +70,14 @@ export const InventoryProvider: React.FC<{ children: ReactNode }> = ({ children 
       },
       {
         id: 'demo-4',
-        name: 'Cotton T-Shirt',
+        name: 'Oats & Healthy Grains',
         sku: 'CTS-004',
         category: 'Clothing',
         currentStock: 3,
         lowStockThreshold: 5,
         purchasePrice: 300,
         sellingPrice: 599,
-        supplier: 'Fashion Hub',
+        supplier: 'Saffola',
         lastUpdated: new Date()
       }
     ];
