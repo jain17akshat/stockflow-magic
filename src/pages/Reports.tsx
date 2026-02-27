@@ -36,24 +36,24 @@ const Reports: React.FC = () => {
     {
       id: 'tx-1',
       date: new Date('2024-01-15'),
-      itemName: 'Wireless Bluetooth Headphones',
+      itemName: 'BASAMATI RICE',
       type: 'sell' as const,
       quantity: 2,
       unitPrice: 2500,
       totalPrice: 5000,
-      customer: 'John Doe',
-      category: 'Electronics'
+      customer: 'BASMATI',
+      category: 'GRAIN'
     },
     {
       id: 'tx-2',
       date: new Date('2024-01-14'),
-      itemName: 'USB-C Charging Cable',
+      itemName: 'ASHIRVAD WHEAT',
       type: 'add' as const,
       quantity: 50,
       unitPrice: 200,
       totalPrice: 10000,
-      supplier: 'Cable World',
-      category: 'Electronics'
+      supplier: 'ASHIRVAD',
+      category: 'GRAINS'
     },
     {
       id: 'tx-3',
@@ -63,19 +63,19 @@ const Reports: React.FC = () => {
       quantity: 10,
       unitPrice: 250,
       totalPrice: 2500,
-      customer: 'Walk-in Customer',
+      customer: 'LIPTON',
       category: 'Food & Beverages'
     },
     {
       id: 'tx-4',
       date: new Date('2024-01-12'),
-      itemName: 'Cotton T-Shirt',
+      itemName: 'OATS',
       type: 'add' as const,
       quantity: 20,
       unitPrice: 300,
       totalPrice: 6000,
-      supplier: 'Fashion Hub',
-      category: 'Clothing'
+      supplier: 'SAFFOLA',
+      category: 'Food Item'
     }
   ];
 
