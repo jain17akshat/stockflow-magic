@@ -26,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, toggleSidebar }) => {
     { name: 'Sales', icon: <ShoppingCart className="w-5 h-5" />, path: '/sales' },
     { name: 'Reports', icon: <FileText className="w-5 h-5" />, path: '/reports' },
     { name: 'Alerts', icon: <Bell className="w-5 h-5" />, path: '/alerts' },
-    { name: 'Settings', icon: <Settings className="w-5 h-5" />, path: '/settings' },
+    // { name: 'Settings', icon: <Settings className="w-5 h-5" />, path: '/settings' },
   ];
 
   return (
