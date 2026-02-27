@@ -9,7 +9,6 @@ import {
   ShoppingCart, 
   FileText, 
   Bell, 
-  Settings,
   Menu
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
